@@ -1,22 +1,18 @@
-## Hi there 👋
+<div align="center">
 
-### I am Sukhmander Singh
+### Hi there! :wave:
 
-### This is under construction :exclamation:
+### I am Sukhmander Singh :octocat:
 
-![callmesukhi's GitHub stats](https://github-readme-stats.vercel.app/api?username=callmesukhi&count_private=true&show_icons=true&theme=radical)
+<br>![callmesukhi's GitHub stats](https://github-readme-stats.vercel.app/api?username=callmesukhi&count_private=true&show_icons=true&theme=radical)
 
-<!--
-**callmesukhi/callmesukhi** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+### :warning: This site/page is under construction :warning:
 
-Here are some ideas to get you started:
+<div>
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+
+<footer>
+
+*You are site visitor number:* <sub>![Hit counter](https://smallcounter.com/count.php?c_style=48&id=1660465353)<sub>
+
+</footer>
