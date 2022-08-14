@@ -17,3 +17,6 @@
 *You are site visitor number:* <sub>![Hit counter](https://smallcounter.com/count.php?c_style=48&id=1660465353)<sub>
 
 </footer>
+
+Site visitor by country:<br>
+<a href="http://s01.flagcounter.com/more/A93"><img src="https://s01.flagcounter.com/map/A93/size_m/txt_000000/border_CCCCCC/pageviews_1/viewers_Visitors+by+country/flags_0/" alt="Flag Counter" border="0"></a>
