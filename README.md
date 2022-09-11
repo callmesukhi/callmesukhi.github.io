@@ -1,6 +1,6 @@
  ![visitors](https://visitor-badge.glitch.me/badge?page_id=callmesukhi&left_color=green&right_color=red)
 
-### Hi there! :wave
+### Hi there! :wave:
 
 <!-- ![octocat](/pngs/octocat-1660153005070.png) -->
 
