@@ -1,7 +1,6 @@
  ![visitors](https://visitor-badge.glitch.me/badge?page_id=callmesukhi&left_color=green&right_color=red)
- 
 
-### Hi there! :wave:
+### Hi there! :wave
 
 <!-- ![octocat](/pngs/octocat-1660153005070.png) -->
 
@@ -9,7 +8,7 @@
 
 <div align="center">
 
-<br>![callmesukhi's GitHub stats](https://github-readme-stats.vercel.app/api?username=callmesukhi&count_private=true&show_icons=true&theme=radical)
+<!--<br>![callmesukhi's GitHub stats](https://github-readme-stats.vercel.app/api?username=callmesukhi&count_private=true&show_icons=true&theme=radical)
 
 ### :warning: This site/page is under construction :warning:
 ![Under construction](https://user-images.githubusercontent.com/282759/84681715-8c7cb580-af02-11ea-85a4-05d069c72121.gif)
