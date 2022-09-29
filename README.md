@@ -2,9 +2,9 @@
 
 ### Hi there! :wave:
 
-<!-- ![octocat](/pngs/octocat-1660153005070.png) -->
-
 ### I am Sukhmander Singh :octocat:
+
+<img src="https://user-images.githubusercontent.com/63070492/193119069-d0cbf805-2ef5-4389-833c-020b582c82c4.png" width="150" height="150">
 
 <div align="center">
 
@@ -25,3 +25,4 @@
 Site visitor by country:<br>
 <a href="http://s01.flagcounter.com/more/A93"><img src="https://s01.flagcounter.com/map/A93/size_m/txt_000000/border_CCCCCC/pageviews_1/viewers_Visitors+by+country/flags_0/" alt="Flag Counter" border="0"></a>
 -->
+
