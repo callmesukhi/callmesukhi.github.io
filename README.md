@@ -1,4 +1,4 @@
- ![visitors](https://visitor-badge.glitch.me/badge?page_id=callmesukhi&left_color=green&right_color=red)
+[![](https://visitcount.itsvg.in/api?id=callmesukhi&icon=0&color=1)](https://visitcount.itsvg.in)
 
 ### Hi there! :wave:
 
