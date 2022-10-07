@@ -2,7 +2,7 @@
 
 <div align="center">
   
-### Hi there!<sub> <img src="https://raw.githubusercontent.com/nixin72/nixin72/master/wave.gif" alt="Waving hand animated gif" height="40" width="40" /> </sub>
+### Hi there!<sub><img src="https://raw.githubusercontent.com/nixin72/nixin72/master/wave.gif" alt="Waving hand animated gif" height="35" width="35" /></sub>
 
 ### I am Sukhmander Singh :octocat:
 
