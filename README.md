@@ -8,12 +8,17 @@
   
 <div id="container">
 
-[![](https://visitcount.itsvg.in/api?id=callmesukhi&icon=0&color=1)](https://visitcount.itsvg.in)
+<div id="views"> 
+  
+  [![](https://visitcount.itsvg.in/api?id=callmesukhi&icon=0&color=1)](https://visitcount.itsvg.in)
+  
+</div> 
+<div id="mode">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="/pngs/sun.png">
+  <source media="(prefers-color-scheme: light)" srcset="/pngs/sun.png">
   <img alt="Dark Mode Picture" src="/pngs/moon.png">
 </picture>
-
+</div>
 </div>
 
 <div align="center">
