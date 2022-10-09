@@ -1,11 +1,5 @@
 #container {
   display: flex;
   flex-direction: row;
-  padding: 10px;
   justify-content: space-between;
-}
-
-#mode {
-  height: 40px;
-  width: 40px;
 }
