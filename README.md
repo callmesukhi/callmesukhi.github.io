@@ -9,8 +9,8 @@
 
 <div id="sun_moon" align="right">
 <picture>
-  <source media="(prefers-color-scheme: light)" srcset="/pngs/sun.png">
-  <img alt="Dark Mode Picture" src="/pngs/moon.png" height="40" width="40">
+  <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/63070492/194926278-f45471e2-d106-4562-bbdc-f5dc8df61f2b.png">
+  <img alt="Dark Mode Picture" src="https://user-images.githubusercontent.com/63070492/194926259-55487710-a7bc-4426-8c22-aad69b17750d.png" height="40" width="40">
 </picture>
 </div>
 
