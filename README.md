@@ -31,7 +31,7 @@
 <div id="chid2">
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="/pngs/sun.png">
-  <img alt="Dark Mode Picture" src="/pngs/moon.png" height="50" width="50">
+  <img alt="Dark Mode Picture" src="/pngs/moon.png" height="40" width="40">
 </picture>
 </div>
 
