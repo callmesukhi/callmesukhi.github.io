@@ -5,12 +5,10 @@
 </head>
 <body>
   
-<div id="container">
-  <div id="child1">
+ [![](https://visitcount.itsvg.in/api?id=callmesukhi&icon=0&color=1)](https://visitcount.itsvg.in)
 
-[![](https://visitcount.itsvg.in/api?id=callmesukhi&icon=0&color=1)](https://visitcount.itsvg.in)
-
-</div>
+  
+<div id="container" align="right">
 
 <div id="empty_child"></div>
 <div id="empty_child"></div>
@@ -52,5 +50,6 @@
 
   </div>
   
+
   </body>
 </html>
