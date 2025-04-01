@@ -1,7 +1,7 @@
 <h1 align="center"> Hoi, <img src="https://raw.githubusercontent.com/nixin72/nixin72/master/wave.gif" 
          alt="Waving hand animated gif"
          height="45"
-         width="45" /> I'm Sukhmander Singh</h1>
+         width="45" /> I'm @callmesukhi</h1>
 
 [![](https://visitcount.itsvg.in/api?id=callmesukhi&icon=0&color=1)](https://visitcount.itsvg.in)
 
