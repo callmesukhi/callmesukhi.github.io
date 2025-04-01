@@ -1,1 +1,36 @@
 node_modules
+# Dependency directory
+node_modules/
+
+# Build output
+.next/
+out/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor folders
+.vscode/
+.idea/
+
+# Mac specific
+*.swp
+
+# Optional: If using Tailwind JIT, cache can be ignored
+.tailwindcache/
+
+# Local VS Code extensions
+*.code-workspace
