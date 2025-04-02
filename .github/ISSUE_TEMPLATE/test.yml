@@ -1,0 +1,114 @@
+name: Step 1 - New Vendor Evaluation
+description: Create a task to track a new vendor evaluation assessment
+title: "New Vendor: [vendor_name]"
+labels: ["Software-New Vendor Evaluation"]
+assignees:
+  - idjama7
+body:
+- type: markdown
+  attributes:
+   value: "For more information on this form and the software purchasing process, check out this guide document [Intake Guidance Document](https://docs.google.com/document/d/1WhkZidUhduoTEn9isC1IlzRQyrejHKgiSwMHhEziTTA/edit#heading=h.sgubygk80pb8)."
+- type: checkboxes
+  id: Prerequisites
+  attributes:
+    label: Pre-requisite reviews 
+    description: Before submitting this intake, please check the boxes below to confirm you have completed the following. IT does not spearhead the Security, Accessibility, or Privacy reviews; however, we cannot implement tools without their approval. If assistance is needed on technical aspects of the review, please advise.
+    options: 
+      - label: Completed an initial analysis of the need, have a problem statement, understand the users / stakeholders we are trying to solve.
+        required: false
+      - label: Reviewed the [IT catalog](https://app.lumosidentity.com/app_store) and did not find an existing tool that could solve the problem.
+        required: false
+      - label: Identified potential tools as solutions.
+        required: false
+      - label: Initiated [NDA](https://contracts-microsoft.azurewebsites.net/Contract/NDA) with Vendor. 
+        required: false
+      - label: Completed [Accessibility Vendor Evaluation](https://github.com/github/workplace-accessibility/issues/new?template=vendor-evaluation.yml).
+        required: false
+      - label: Initiated [Vendor Security GRC](https://github.com/github/security-grc-reviews/issues) review.
+        required: false
+      - label: Initiated [Privacy](https://github.com/github/privacy) review.
+        required: false
+      - label: Vendor supports SSO (SAML/OIDC) for user management.
+        required: false
+
+        
+- type: textarea
+  id: nda-review-links
+  attributes:
+    description: "For new tools you will need to open [Vendor Security](https://github.com/github/security-grc-reviews/issues), [Privacy](https://github.com/github/privacy), [Accessibility](https://github.com/github/workplace-accessibility/issues/new?template=vendor-evaluation.yml) reviews before we can begin a POC. We recommend that you start them now. Also, you must have a signed NDA with the vendor, please attach it here."
+    placeholder: Please provide links to all open reviews, eg Privacy, Vendor Security, Accessibility and drop the signed NDA file/link here. 
+    label: NDA & Review Links
+  validations:
+    required: true
+
+- type: textarea
+  id: problem-statement
+  attributes:
+    description: What are your current challenges or pain points, and how would a tool help? Quantify the impact of this problem as specifically as possible.
+    placeholder: For example, Despite their widespread popularity, the process of making peanut butter and jelly sandwiches often leads to messy kitchens and inconsistent sandwich quality. This inefficiency poses a challenge for both home cooks and food service industries. The company aspires to reduce this percentage to under 10%. However, achieving this goal would require filling specialized roles and implementing substantial cultural changes within our organization.
+    label: Problem Statement
+  validations:
+    required: true
+
+- type: textarea
+  id: tools-investigated
+  attributes:
+    description: Have you investigated solutions (potential tools)? If yes, what are they?
+    placeholder: Do you have a solution in mind, or a couple you'd like to compare?
+    label: Tools Investigated
+  validations:
+    required: true
+
+- type: textarea
+  id: vendor-resources
+  attributes:
+    description: Please share the following vendor information - URL to product page, primary vendor contact name and email, any documentation received from the vendor. 
+    placeholder: Please add any relevant info to get us up to speed on this solution. 
+    label: Vendor Resources
+  validations:
+    required: true
+
+- type: textarea
+  id: tool-integrations
+  attributes:
+    description: Would this solution integrate with other tools used at GitHub? If yes, what are they? Please tag the integrated tool's owner if you know who they are. 
+    placeholder: Nearly all tools integrate with Okta for SSO, any other integrations?
+    label: Tool Integrations
+  validations:
+    required: true
+
+- type: textarea
+  id: users
+  attributes:
+    description: What is the intended user base for this tool - which departments and how many licenses do you anticipate?
+    placeholder: For example, this tool is needed at the coffee bar, which is about 5 people.
+    label: Users
+  validations:
+    required: true
+
+- type: textarea
+  id: sponsors
+  attributes:
+    description: Who is the executive sponsor for this tool, and which cost center will own the budget?
+    placeholder: Please tag the exec sponsor and have them approve this issue by commenting "I Approve".
+    label: Sponsors
+  validations:
+    required: true
+    
+- type: textarea
+  id: risks
+  attributes:
+    description: What are some potential risks and challenges with adoption? What strategies and mitigation plans have you identified?
+    placeholder: Risks such as data privacy concerns, ethical implications, technical limitations, or organizational resistance.
+    label: Risks
+  validations:
+    required: true
+
+- type: checkboxes
+  id: IT-Review-Status
+  attributes:
+    label: For IT Reviewers
+    description: This section completed by IT team as a part of our assessment
+    options: 
+      - label: Technical Assessment Complete / Tool Compatible with IT stack
+        required: false
