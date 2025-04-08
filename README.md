@@ -42,16 +42,5 @@ Visit [http://localhost:3000](http://localhost:3000) to view the site in develop
 <img src="https://img.shields.io/badge/Apple-MacBook_Pro_2021-333333?style=for-the-badge&logo=apple&logoColor=white"/> <img src="https://img.shields.io/badge/Warp-000000?style=for-the-badge&logo=iterm2&logoColor=white"/>
 
 
-## 💳 Github Profile Summary Card
-<p align="center">
-  <img src="https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=callmesukhi&theme=vue"/>
-</p>
-
-## 📟 GitHub Stats
-<p align="center">
-	<img width="48%" src="https://github-readme-stats.vercel.app/api?username=callmesukhi&show_icons=true&theme=vue" />
-	<img width="48%" src="https://github-readme-streak-stats.herokuapp.com/?user=callmesukhi&theme=vue" />
-</p>
-
 ### ✍️Random Dev Quote
 ![](https://quotes-github-readme.vercel.app/api?type=horizontal&theme=vue)
