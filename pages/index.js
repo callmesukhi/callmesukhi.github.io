@@ -396,6 +396,10 @@ export default function Home() {
                 <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
               </svg>
             </div>
+            {/* Tooltip */}
+            <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 text-sm whitespace-nowrap rounded transition-opacity opacity-0 group-hover:opacity-100 ${darkMode ? 'bg-white text-black' : 'bg-black text-white'}`}>
+              Clicking on this would take you to resume page
+            </div>
           </a>
         </motion.div>
         
