@@ -22,13 +22,11 @@ jobs:
         uses: actions/checkout@v4
         
       - name: 🧹 Sanitize issue body and save to file
+        id: sanitize
+        continue-on-error: true
         run: |
           ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH")
-      
-          # Replace inline `code` with **bold** (but not triple-backtick blocks)
           ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/(^|[^`])`([^`]+)`([^`]|$)/\1**\2**\3/g')
-      
-          # Now wrap ``` blocks inside quote markers
           inside_block=false
           while IFS= read -r line; do
             if [[ "$line" =~ ^\`\`\` ]]; then
@@ -47,6 +45,8 @@ jobs:
 
 
       - name: ✍️ Create markdown email template
+        id: compose
+        continue-on-error: true
         run: |
           cat <<'EOF' > email-template.md
           🚀 An issue has been marked as **Approved**!
@@ -64,8 +64,6 @@ jobs:
           $ISSUE_BODY
           EOF
 
-      - name: Substitute variables into email.md
-        run: |
           export ISSUE_TITLE="${{ github.event.issue.title }}"
           export ISSUE_AUTHOR="${{ github.event.issue.user.login }}"
           export ISSUE_URL="${{ github.event.issue.html_url }}"
@@ -73,6 +71,8 @@ jobs:
           envsubst < email-template.md > email.md
                
       - name: 📲 Convert markdown to HTML
+        id: convert
+        continue-on-error: true
         run: |
           sudo apt-get update && sudo apt-get install -y pandoc
           pandoc email.md -f markdown -t html -s \
@@ -80,6 +80,7 @@ jobs:
             --metadata title="Request Approved"
         
       - name: 📧 Send email notification
+        id: send_email
         uses: dawidd6/action-send-mail@v4
         continue-on-error: true
         with:
@@ -99,35 +100,29 @@ jobs:
 
       - name: 📝 Handle success or failure
         if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          REPO: ${{ github.repository }}
-          EMAIL_TO: ${{ secrets.MAIL_TO }}
-          STATUS: ${{ steps.send_email.outcome }}
         run: |
-          if [ "$STATUS" = "success" ]; then
-            DOMAIN=$(echo "$EMAIL_TO" | sed -E 's/.*@([^, >]+).*/\1/')
-            echo "✅ Email sent to $DOMAIN"
+          echo "Email step result: ${{ steps.send_email.outcome }}"
+          echo "Email step conclusion: ${{ steps.send_email.conclusion }}"
+          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
+          EMAIL_DOMAIN=$(echo "${{ secrets.MAIL_TO }}" | awk -F '@' '{print $2}')
 
-            # Add comment
-            curl -s -X POST -H "Authorization: token $GH_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{\"body\": \"✅ Email was sent successfully to \`$DOMAIN\`.\"}" \
-              "https://api.github.com/repos/$REPO/issues/$ISSUE_NUMBER/comments"
-
-            # Add label
-            curl -s -X POST -H "Authorization: token $GH_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d '[ "Request Sent" ]' \
-              "https://api.github.com/repos/$REPO/issues/$ISSUE_NUMBER/labels"
-
-          else
-            echo "❌ Email failed"
-
-            # Add failure comment with summary from logs
-            curl -s -X POST -H "Authorization: token $GH_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{\"body\": \"❌ Email failed to send.\n\nPlease check the workflow logs for details.\"}" \
-              "https://api.github.com/repos/$REPO/issues/$ISSUE_NUMBER/comments"
+          if [ "${{ steps.sanitize.conclusion }}" != "success" ] || \
+             [ "${{ steps.compose.conclusion }}" != "success" ] || \
+             [ "${{ steps.convert.conclusion }}" != "success" ]; then
+            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -d '{"body":"❌ Failed to compose message due to a processing error."}' "$COMMENT_URL"
+            exit 0
           fi
+
+          if [ "${{ steps.send_email.conclusion }}" != "success" ]; then
+            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -d '{"body":"❌ @${{ github.event.issue.user.login }}, sending request to \`$EMAIL_DOMAIN\` failed. Please check workflow logs."}' "$COMMENT_URL"
+            exit 0
+          fi
+
+          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d "{\"body\": \"✅ Request sent successfully to \`$EMAIL_DOMAIN\`\"}" "$COMMENT_URL"
+
+          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d '{"labels": ["Request Sent"]}' \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels"
