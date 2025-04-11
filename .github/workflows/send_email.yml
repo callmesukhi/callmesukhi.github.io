@@ -57,14 +57,14 @@ jobs:
           ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH") || {
             curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > Failed to read issue body from GitHub event."}' "$COMMENT_URL"
+              -d '{"body":"> [!CAUTION]\n > 🔴 Failed to read issue body from GitHub event."}' "$COMMENT_URL"
             exit 1
           }
 
           ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/(^|[^`])`([^`]+)`([^`]|$)/\1**\2**\3/g') || {
             curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > Failed to sanitize inline code blocks."}' "$COMMENT_URL"
+              -d '{"body":"> [!CAUTION]\n > 🔴 Failed to sanitize inline code blocks."}' "$COMMENT_URL"
             exit 1
           }
 
@@ -87,7 +87,7 @@ jobs:
           } > issue-body.txt || {
             curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > Failed to write sanitized issue body."}' "$COMMENT_URL"
+              -d '{"body":"> [!CAUTION]\n > 🔴 Failed to write sanitized issue body."}' "$COMMENT_URL"
             exit 1
           }
 
@@ -107,7 +107,7 @@ jobs:
           envsubst < email-template.md > email.md || {
             curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > Failed to create the final email content."}' "$COMMENT_URL"
+              -d '{"body":"> [!CAUTION]\n > 🔴 Failed to create the final email content."}' "$COMMENT_URL"
             exit 1
           }
 
@@ -123,7 +123,7 @@ jobs:
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                -H "Content-Type: application/json" \
-               -d '{"body":"> [!CAUTION]\n > Failed to convert Markdown to HTML."}' "$COMMENT_URL"
+               -d '{"body":"> [!CAUTION]\n > 🔴 Failed to convert Markdown to HTML."}' "$COMMENT_URL"
   
           
       # - name: 📲 Convert markdown to HTML
