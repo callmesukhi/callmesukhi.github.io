@@ -18,8 +18,19 @@ jobs:
         contents: read
 
     steps:
-      - name: Checkout repo
+      - name: ✔️ Checkout repo
         uses: actions/checkout@v4
+
+      - name: 🛑 Skip if 'Request Sent' label already exists
+        run: |
+          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
+          if gh issue view ${{ github.event.issue.number }} --json labels -q ".labels[].name" | grep -q "Request Sent"; then
+            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -d '{"body":"⚠️\n\n > [!CAUTION]\n > This issue already has a `Request Sent` label.\n > If this was assigned by mistake, please remove the `Request Sent` and `Approved` labels and reapply the `Approved` label."}' "$COMMENT_URL"
+            echo "Issue already labeled as 'Request Sent'. Skipping workflow."
+            exit 0
+          fi
 
       - name: 🧹 Sanitize issue body and save to file
         run: |
