@@ -167,7 +167,7 @@ jobs:
           sed -E 's/\.[^.]+$//' | \
           awk '{ print toupper(substr($0,1,1)) substr($0,2) }' | \
           sort -u | paste -sd ', ' -)
-          COMMENT_BODY="> [!CAUTION]\n > :red_circle: **@${{ github.event.issue.user.login }}**, sending request to **\`${EMAIL_DOMAIN}\`** failed. Please check workflow logs."
+          COMMENT_BODY="> [!CAUTION]\n > :red_circle: **@${{ github.event.issue.user.login }}**, sending request to **${EMAIL_DOMAINS}** failed. Please check workflow logs."
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "{\"body\": \"$COMMENT_BODY\"}" "$COMMENT_URL"
