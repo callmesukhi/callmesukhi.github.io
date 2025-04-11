@@ -35,12 +35,12 @@ jobs:
           # convert_markdown: true
           # envelope_from: mailer@example.com
           # attachments: attachments.zip,git.diff,./dist/static/*.js
-          body: |
-            An issue has been marked as Approved!
+          # body: |
+          #   An issue has been marked as Approved!
 
-            Title: ${{ github.event.issue.title }}
-            URL: ${{ github.event.issue.html_url }}
-            Created by: ${{ github.event.issue.user.login }}
+          #   Title: ${{ github.event.issue.title }}
+          #   URL: ${{ github.event.issue.html_url }}
+          #   Created by: ${{ github.event.issue.user.login }}
 
-            Please review the issue for next steps.
-          # html_body: file://README.html
+          #   Please review the issue for next steps.
+          html_body: file://email.html
