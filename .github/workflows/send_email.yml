@@ -72,18 +72,5 @@ jobs:
           # convert_markdown: true
           # envelope_from: mailer@example.com
           # attachments: attachments.zip,git.diff,./dist/static/*.js
-          # body: |
-          #   🚀 An issue has been marked as **Approved**!
-
-          #   ### Title
-          #   ${{ github.event.issue.title }}
-
-          #   ### Author
-          #   ${{ github.event.issue.user.login }}
-
-          #   ### URL
-          #   ${{ github.event.issue.html_url }}
-
-          #   ### Issue Body
-          #   ${{ github.event.issue.body }}
+          # body: 
           html_body: file://generated-email.html
