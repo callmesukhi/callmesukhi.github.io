@@ -23,11 +23,12 @@ jobs:
         
       - name: 🧹 Sanitize issue body and save to file
         run: |
-          body="${{ github.event.issue.body }}"
-          body=$(echo "$body" | sed -E 's/`([^`]*)`/**\1**/g')
-          body=$(echo "$body" | sed -E '/^```/,/^```/s/^/**/' | sed -E '/^```/d')
-          echo "$body" > issue-body.txt
-          
+          echo "${{ github.event.issue.body }}" \
+          | sed -E 's/`([^`]*)`/**\1**/g' \
+          | sed -E '/^```/,/^```/s/^/**/' \
+          | sed -E '/^```/d' \
+          > issue-body.txt
+
       - name: ✍️ Create markdown email template
         run: |
           cat <<'EOF' > email-template.md
