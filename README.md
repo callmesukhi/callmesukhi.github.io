@@ -4,6 +4,8 @@
          width="45" /> I'm @callmesukhi</h1>
 
 [![](https://visitcount.itsvg.in/api?id=callmesukhi&icon=0&color=1)](https://visitcount.itsvg.in)
+[![Deploy to GitHub Pages](https://github.com/callmesukhi/callmesukhi.github.io/actions/workflows/deploy.yml/badge.svg)](https://github.com/callmesukhi/callmesukhi.github.io/actions/workflows/deploy.yml)
+[![Send Email on Approved Label](https://github.com/callmesukhi/callmesukhi.github.io/actions/workflows/send_email.yml/badge.svg)](https://github.com/callmesukhi/callmesukhi.github.io/actions/workflows/send_email.yml)
 
 # 💫 About Me :
 - 😄 Pronouns: He/His/Him
@@ -38,6 +40,24 @@ npm run deploy
 ```
 
 Visit [http://localhost:3000](http://localhost:3000) to view the site in development.
+
+### 📁 Repository Structure
+```
+.
+├── pages/              # Next.js pages directory
+│   ├── _app.js        # Main app component
+│   └── index.js       # Home page
+├── public/            # Static assets
+│   ├── favicon.*      # Favicon files
+│   ├── resume.pdf     # Resume document
+│   └── site.webmanifest
+├── styles/            # Global styles
+│   └── globals.css
+├── next.config.js     # Next.js configuration
+├── postcss.config.js  # PostCSS configuration
+└── tailwind.config.js # Tailwind CSS configuration
+```
+
 ## 👨🏻‍💻 Laptop in use & Favorite Terminal
 <img src="https://img.shields.io/badge/Apple-MacBook_Pro_2021-333333?style=for-the-badge&logo=apple&logoColor=white"/> <img src="https://img.shields.io/badge/Warp-000000?style=for-the-badge&logo=iterm2&logoColor=white"/>
 
