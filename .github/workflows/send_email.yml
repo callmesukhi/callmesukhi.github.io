@@ -115,7 +115,7 @@ jobs:
         id: convert
         uses: docker://pandoc/core:3.1
         with:
-          args: -f markdown -t html -s -o generated-email.html email.md
+          args: -f ma -t html -s -o generated-email.html email.md
 
       - name: ❌ If Converting to HTML fails
         if: failure() && steps.convert.conclusion != 'success'
