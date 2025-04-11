@@ -1,0 +1,46 @@
+name: Send Email on Approved Label
+
+on:
+  issues:
+    types:
+      - labeled
+
+permissions:
+  issues: read
+ 
+jobs:
+  send_email:
+    if: github.event.label.name == 'Approved'
+    runs-on: ubuntu-latest
+    permissions:
+        issues: read
+
+    steps:
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v4
+        with:
+          connection_url: ${{secrets.MAIL_CONNECTION}}
+          # server_address: ${{ secrets.SMTP_SERVER }}
+          # server_port: ${{ secrets.SMTP_PORT }}
+          # secure: true
+          # username: ${{ secrets.MAIL_USERNAME }}
+          # password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "Issue Approved: #${{ github.event.issue.number }}"
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_FROM }}
+          # reply_to: ${{ secrets.MAIL_REPLY_TO }}
+          # in_reply_to: ${{ github.event.issue.html_url }}
+          cc: ${{ secrets.MAIL_CC }}
+          # bcc: ${{ secrets.MAIL_BCC }}
+          # convert_markdown: true
+          # envelope_from: mailer@example.com
+          # attachments: attachments.zip,git.diff,./dist/static/*.js
+          body: |
+            An issue has been marked as Approved!
+
+            Title: ${{ github.event.issue.title }}
+            URL: ${{ github.event.issue.html_url }}
+            Created by: ${{ github.event.issue.user.login }}
+
+            Please review the issue for next steps.
+          # html_body: file://README.html
