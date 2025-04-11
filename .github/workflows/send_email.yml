@@ -6,117 +6,93 @@ on:
       - labeled
 
 permissions:
-  issues: read
+  issues: write
   contents: read
- 
+
 jobs:
   send_email:
     if: github.event.label.name == 'Approved'
     runs-on: ubuntu-latest
-    permissions:
-        issues: write
-        contents: read
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        
-      - name: 🧹 Sanitize issue body and save to file
-        id: sanitize
-        continue-on-error: true
+
+      - name: 🔁 Run full email flow with error handling
+        shell: bash
         run: |
+          set -e
+          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
+          GH_AUTH="-H Authorization: token ${{ secrets.GITHUB_TOKEN }}"
+
+          trap 'echo "❌ Workflow failed. Posting failure comment..." && curl -s -X POST $GH_AUTH -H "Content-Type: application/json" -d "{\"body\":\"❌ Failed to compose and send message.\"}" "$COMMENT_URL" && exit 1' ERR
+
+          # --- Step 1: Sanitize issue body
           ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH")
           ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/(^|[^`])`([^`]+)`([^`]|$)/\1**\2**\3/g')
+
           inside_block=false
+          SANITIZED_BODY=""
           while IFS= read -r line; do
             if [[ "$line" =~ ^\`\`\` ]]; then
-              if [ "$inside_block" = false ]; then
-                inside_block=true
-              else
-                inside_block=false
-              fi
-              echo "> $line"
-            elif [ "$inside_block" = true ]; then
-              echo "> $line"
+              inside_block=$(! $inside_block && echo true || echo false)
+              SANITIZED_BODY+="> $line"$'\n'
+            elif $inside_block; then
+              SANITIZED_BODY+="> $line"$'\n'
             else
-              echo "$line"
+              SANITIZED_BODY+="$line"$'\n'
             fi
-          done <<< "$ISSUE_BODY" > issue-body.txt
+          done <<< "$ISSUE_BODY"
 
+          echo "$SANITIZED_BODY" > issue-body.txt
 
-      - name: ✍️ Create markdown email template
-        id: compose
-        continue-on-error: true
-        run: |
-          cat <<'EOF' > email-template.md
-          🚀 An issue has been marked as **Approved**!
-          
-          ### Title
-          $ISSUE_TITLE
-          
-          ### Author
-          $ISSUE_AUTHOR
-          
-          ### URL
-          $ISSUE_URL
-          
-          ### Issue Body
-          $ISSUE_BODY
-          EOF
-
+          # --- Step 2: Build email content
           export ISSUE_TITLE="${{ github.event.issue.title }}"
           export ISSUE_AUTHOR="${{ github.event.issue.user.login }}"
           export ISSUE_URL="${{ github.event.issue.html_url }}"
           export ISSUE_BODY="$(cat issue-body.txt)"
-          envsubst < email-template.md > email.md
-               
-      - name: 📲 Convert markdown to HTML
-        id: convert
-        continue-on-error: true
-        run: |
+
+          cat <<EOF > email.md
+            🚀 An issue has been marked as **Approved**!
+
+            ### Title
+            $ISSUE_TITLE
+
+            ### Author
+            $ISSUE_AUTHOR
+
+            ### URL
+            $ISSUE_URL
+
+            ### Issue Body
+            $ISSUE_BODY
+            EOF
+
+          # --- Step 3: Convert to HTML
           sudo apt-get update && sudo apt-get install -y pandoc
           pandoc email.md -f markdown -t html -s \
             -o generated-email.html \
             --metadata title="Request Approved"
-        
-      - name: 📧 Send email notification
-        id: send_email
-        uses: dawidd6/action-send-mail@v4
-        continue-on-error: true
-        with:
-          connection_url: ${{secrets.MAIL_CONNECTION}}
-          subject: "✅ Request approved!"
-          to: ${{ secrets.MAIL_TO }}
-          from: ${{ secrets.MAIL_FROM }}
-          reply_to: ${{ secrets.MAIL_REPLY_TO }}
-          cc: ${{ secrets.MAIL_CC }}
-          html_body: file://generated-email.html
 
+          # --- Step 4: Send email
+          echo "📤 Sending email..."
+          dawidd6/action-send-mail@v4 <<EOF
+            connection_url: ${{ secrets.MAIL_CONNECTION }}
+            subject: "✅ Request approved!"
+            to: ${{ secrets.MAIL_TO }}
+            from: ${{ secrets.MAIL_FROM }}
+            reply_to: ${{ secrets.MAIL_REPLY_TO }}
+            cc: ${{ secrets.MAIL_CC }}
+            html_body: file://generated-email.html
+            EOF
 
-      - name: 📝 Handle success or failure
-        if: always()
-        run: |
-          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
+          # --- Step 5: Comment success and label
           RAW_EMAIL="${{ secrets.MAIL_TO }}"
           EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
 
-          if [ "${{ steps.sanitize.conclusion }}" != "success" ] || \
-             [ "${{ steps.compose.conclusion }}" != "success" ] || \
-             [ "${{ steps.convert.conclusion }}" != "success" ]; then
-            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -d '{"body":"❌ Failed to compose message due to a processing error."}' "$COMMENT_URL"
-            exit 0
-          fi
-
-          if [ "${{ steps.send_email.conclusion }}" != "success" ]; then
-            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -d '{"body":"❌ @${{ github.event.issue.user.login }}, sending request to \`$EMAIL_DOMAIN\` failed. Please check workflow logs."}' "$COMMENT_URL"
-            exit 0
-          fi
-
-          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          curl -s -X POST $GH_AUTH -H "Content-Type: application/json" \
             -d "{\"body\": \"✅ Request sent successfully to \`$EMAIL_DOMAIN\`\"}" "$COMMENT_URL"
 
-          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          curl -s -X POST $GH_AUTH -H "Content-Type: application/json" \
             -d '{"labels": ["Request Sent"]}' \
             "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels"
