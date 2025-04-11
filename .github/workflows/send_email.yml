@@ -23,11 +23,20 @@ jobs:
         
       - name: 🧹 Sanitize issue body and save to file
         run: |
-          echo "${{ github.event.issue.body }}" \
-          | sed -E 's/`([^`]*)`/**\1**/g' \
-          | sed -E '/^```/,/^```/s/^/**/' \
-          | sed -E '/^```/d' \
-          > issue-body.txt
+          # Extract raw issue body from event payload
+          ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH")
+      
+          # Replace `inline code` with **bold**
+          ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/`([^`]*)`/**\1**/g')
+      
+          # Convert fenced code blocks (```...```) to bold text block
+          ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E '/^```/,/^```/s/^/**/' | sed -E '/^```/d')
+      
+          # Save to file
+          echo "$ISSUE_BODY" > issue-body.txt
+
+      - name: Debug issue body file
+        run: cat issue-body.txt
 
       - name: ✍️ Create markdown email template
         run: |
