@@ -44,16 +44,16 @@ jobs:
           🚀 An issue has been marked as **Approved**!
           
           ### Title
-          {{ISSUE_TITLE}}
+          $ISSUE_TITLE
           
           ### Author
-          {{ISSUE_AUTHOR}}
+          $ISSUE_AUTHOR
           
           ### URL
-          {{ISSUE_URL}}
+          $ISSUE_URL
           
           ### Issue Body
-          {{ISSUE_BODY}}
+          $ISSUE_BODY
           EOF
 
       - name: Substitute variables into email.md
