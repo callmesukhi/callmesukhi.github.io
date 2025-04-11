@@ -20,25 +20,22 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      - name: Create markdown email content
+        
+      - name: 🧹 Sanitize issue body (code → bold)
         run: |
-         cat <<EOF > email.md
-           <style>
-            code {
-              background-color: #f6f8fa;
-              font-family: monospace;
-              font-size: 0.9em;
-              padding: 2px 4px;
-              border-radius: 4px;
-            }
-            pre {
-              background-color: #f6f8fa;
-              padding: 10px;
-              font-size: 0.9em;
-              border-radius: 4px;
-              overflow-x: auto;
-            }
-          </style>
+          body="${{ github.event.issue.body }}"
+      
+          # Convert inline `code` to bold
+          body=$(echo "$body" | sed -E 's/`([^`]*)`/**\1**/g')
+      
+          # Convert fenced blocks (```...```) to bold text block
+          body=$(echo "$body" | sed -E '/^```/,/^```/s/^/**/' | sed -E '/^```/d')
+      
+          echo "$body" > issue-body.txt
+          
+      - name: 🦾 Build final markdown with sanitized issue body
+        run: |
+         cat <<'EOF' > email.md
          🚀 An issue has been marked as **Approved**!
 
          ### Title
@@ -51,30 +48,25 @@ jobs:
          ${{ github.event.issue.html_url }}
                       
          ### Issue Body
-         ${{ github.event.issue.body }}
+         $(cat issue-body.txt)
          EOF
-      - name: Convert markdown to HTML
+         
+      - name: 📲 Convert markdown to HTML
         run: |
           sudo apt-get update && sudo apt-get install -y pandoc
           pandoc email.md -f markdown -t html -s -o generated-email.html --metadata title="Request Approved"
         
-      - name: Send email notification
+      - name: 📧 Send email notification
         uses: dawidd6/action-send-mail@v4
         with:
           connection_url: ${{secrets.MAIL_CONNECTION}}
-          # server_address: ${{ secrets.SMTP_SERVER }}
-          # server_port: ${{ secrets.SMTP_PORT }}
-          # secure: true
-          # username: ${{ secrets.MAIL_USERNAME }}
-          # password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "Issue Approved: #${{ github.event.issue.number }}"
+          subject: "✅ Request approved!"
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_FROM }}
           reply_to: ${{ secrets.MAIL_REPLY_TO }}
-          # in_reply_to: ${{ github.event.issue.html_url }}
           cc: ${{ secrets.MAIL_CC }}
           # bcc: ${{ secrets.MAIL_BCC }}
-          convert_markdown: true
+          # convert_markdown: true
           # envelope_from: mailer@example.com
           # attachments: attachments.zip,git.diff,./dist/static/*.js
           # body: |
