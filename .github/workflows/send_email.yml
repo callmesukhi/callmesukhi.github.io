@@ -12,6 +12,9 @@ permissions:
 jobs:
   check_label:
     runs-on: ubuntu-latest
+    permissions:
+        issues: write
+        contents: read
     outputs:
       skip_email: ${{ steps.check.outputs.skip_email }}
     steps:
