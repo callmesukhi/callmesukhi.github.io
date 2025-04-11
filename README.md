@@ -4,7 +4,6 @@
          width="45" /> I'm @callmesukhi</h1>
 
 [![](https://visitcount.itsvg.in/api?id=callmesukhi&icon=0&color=1)](https://visitcount.itsvg.in)
-[![Deploy to GitHub Pages](https://github.com/callmesukhi/callmesukhi.github.io/actions/workflows/deploy.yml/badge.svg)](https://github.com/callmesukhi/callmesukhi.github.io/actions/workflows/deploy.yml)
 [![Send Email on Approved Label](https://github.com/callmesukhi/callmesukhi.github.io/actions/workflows/send_email.yml/badge.svg)](https://github.com/callmesukhi/callmesukhi.github.io/actions/workflows/send_email.yml)
 
 # 💫 About Me :
@@ -22,7 +21,7 @@ This repository contains my personal website built with:
 - **Next.js**: React framework for production
 - **TailwindCSS**: For modern, responsive styling
 - **Framer Motion**: For smooth animations
-- **GitHub Pages**: For hosting
+- **Vercel**: For hosting and deployment
 
 ### 🚀 Development
 ```bash
@@ -34,12 +33,23 @@ npm run dev
 
 # Build for production
 npm run build
-
-# Deploy to GitHub Pages
-npm run deploy
 ```
 
 Visit [http://localhost:3000](http://localhost:3000) to view the site in development.
+
+### 📝 Deployment
+The site is deployed on Vercel. New deployments happen automatically when changes are pushed to the main branch.
+
+To deploy manually or set up your own instance:
+
+1. Sign up for a [Vercel account](https://vercel.com/signup)
+2. Install the Vercel CLI: `npm i -g vercel`
+3. Run `vercel login` and follow the prompts
+4. From the project directory, run `vercel` to deploy
+5. To configure a custom domain:
+   - Add your domain in the Vercel project settings
+   - Update your DNS settings as prompted by Vercel
+   - Wait for SSL certificate provisioning
 
 ### 📁 Repository Structure
 ```
