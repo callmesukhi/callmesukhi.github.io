@@ -25,23 +25,25 @@ jobs:
         run: |
           ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH")
       
-          # Replace inline `code` (not backtick blocks) with **bold**
+          # Replace inline `code` with **bold** (but not triple-backtick blocks)
           ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/(^|[^`])`([^`]+)`([^`]|$)/\1**\2**\3/g')
       
-          # Convert ``` fenced code blocks into quote blocks
+          # Now wrap ``` blocks inside quote markers
           inside_block=false
-          echo "$ISSUE_BODY" | while IFS= read -r line; do
-            if [[ "$line" == '```'* ]]; then
-              inside_block=!$inside_block
-              continue
-            fi
-      
-            if $inside_block; then
+          while IFS= read -r line; do
+            if [[ "$line" =~ ^\`\`\` ]]; then
+              if [ "$inside_block" = false ]; then
+                inside_block=true
+              else
+                inside_block=false
+              fi
+              echo "> $line"
+            elif [ "$inside_block" = true ]; then
               echo "> $line"
             else
               echo "$line"
             fi
-          done > issue-body.txt
+          done <<< "$ISSUE_BODY" > issue-body.txt
 
       - name: Debug issue body file
         run: cat issue-body.txt
