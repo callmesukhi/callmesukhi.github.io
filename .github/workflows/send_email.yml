@@ -16,6 +16,9 @@ jobs:
         issues: read
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        
       - name: Send email notification
         uses: dawidd6/action-send-mail@v4
         with:
