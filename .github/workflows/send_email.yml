@@ -40,15 +40,21 @@ jobs:
           # in_reply_to: ${{ github.event.issue.html_url }}
           cc: ${{ secrets.MAIL_CC }}
           # bcc: ${{ secrets.MAIL_BCC }}
-          # convert_markdown: true
+          convert_markdown: true
           # envelope_from: mailer@example.com
           # attachments: attachments.zip,git.diff,./dist/static/*.js
-          # body: |
-          #   An issue has been marked as Approved!
+          body: |
+            🚀 An issue has been marked as **Approved**!
 
-          #   Title: ${{ github.event.issue.title }}
-          #   URL: ${{ github.event.issue.html_url }}
-          #   Created by: ${{ github.event.issue.user.login }}
+            ### Title
+            ${{ github.event.issue.title }}
 
-          #   Please review the issue for next steps.
-          html_body: file://email.html
+            ### Author
+            ${{ github.event.issue.user.login }}
+
+            ### URL
+            ${{ github.event.issue.html_url }}
+
+            ### Issue Body
+            ${{ github.event.issue.body }}
+          # html_body: file://email.html
