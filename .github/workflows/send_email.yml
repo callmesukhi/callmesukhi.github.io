@@ -23,17 +23,25 @@ jobs:
         
       - name: 🧹 Sanitize issue body and save to file
         run: |
-          # Extract raw issue body from event payload
           ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH")
       
-          # Replace ONLY inline code (`...`) — not ``` blocks
+          # Replace inline `code` (not backtick blocks) with **bold**
           ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/(^|[^`])`([^`]+)`([^`]|$)/\1**\2**\3/g')
       
-          # Optional: convert code blocks into indented lines or blockquotes
-          ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/^```.*$//' | sed -E 's/^(.*)$/    \1/')
+          # Convert ``` fenced code blocks into quote blocks
+          inside_block=false
+          echo "$ISSUE_BODY" | while IFS= read -r line; do
+            if [[ "$line" == '```'* ]]; then
+              inside_block=!$inside_block
+              continue
+            fi
       
-          # Save to file
-          echo "$ISSUE_BODY" > issue-body.txt
+            if $inside_block; then
+              echo "> $line"
+            else
+              echo "$line"
+            fi
+          done > issue-body.txt
 
       - name: Debug issue body file
         run: cat issue-body.txt
