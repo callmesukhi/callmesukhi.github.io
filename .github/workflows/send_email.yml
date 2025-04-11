@@ -122,32 +122,40 @@ jobs:
               -d '{"body":"❌ Failed to convert Markdown to HTML."}' "$COMMENT_URL"
             exit 1
           }
-
+      
       - name: 📧 Send email notification
+        id: send_email
+        uses: dawidd6/action-send-mail@v4
+        with:
+          connection_url: ${{ secrets.MAIL_CONNECTION }}
+          subject: "✅ Request approved!"
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_FROM }}
+          reply_to: ${{ secrets.MAIL_REPLY_TO }}
+          cc: ${{ secrets.MAIL_CC }}
+          html_body: file://generated-email.html
+
+      - name: 🛑 Comment on failure
+        if: failure()
         run: |
-          set -e
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           RAW_EMAIL="${{ secrets.MAIL_TO }}"
           EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
-
-          dawidd6/action-send-mail@v4 \
-            --connection_url "${{ secrets.MAIL_CONNECTION }}" \
-            --subject "✅ Request approved!" \
-            --to "$RAW_EMAIL" \
-            --from "${{ secrets.MAIL_FROM }}" \
-            --reply_to "${{ secrets.MAIL_REPLY_TO }}" \
-            --cc "${{ secrets.MAIL_CC }}" \
-            --html_body "file://generated-email.html" || {
-              curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                -H "Content-Type: application/json" \
-                -d "{\"body\":\"❌ @${{ github.event.issue.user.login }}, sending request to \\\`$EMAIL_DOMAIN\\` failed. Please check workflow logs.\"}" "$COMMENT_URL"
-              exit 1
-          }
-
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{\"body\": \"✅ Request sent successfully to \\\`$EMAIL_DOMAIN\\`\"}" "$COMMENT_URL"
+            -d '{"body":"❌ @${{ github.event.issue.user.login }}, sending request to `'"$EMAIL_DOMAIN"'` failed. Please check workflow logs."}' \
+            "$COMMENT_URL"
 
+      - name: ✅ Comment on success
+        if: success()
+        run: |
+          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
+          RAW_EMAIL="${{ secrets.MAIL_TO }}"
+          EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
+          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"body\": \"✅ Request sent successfully to \`$EMAIL_DOMAIN\`\"}" "$COMMENT_URL"
+      
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{"labels": ["Request Sent"]}' \
