@@ -148,7 +148,7 @@ jobs:
         id: send_email
         uses: dawidd6/action-send-mail@v4
         with:
-          connection_url: ${{ secrets.MAIL_CONNECTION }}
+          connection_url: ${{ secrets.MAIL_CONNECTION_URL }}
           subject: "[ACTION]: Purchase/Transfer"
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_FROM }}
