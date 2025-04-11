@@ -45,8 +45,6 @@ jobs:
             fi
           done <<< "$ISSUE_BODY" > issue-body.txt
 
-      - name: Debug issue body file
-        run: cat issue-body.txt
 
       - name: ✍️ Create markdown email template
         run: |
@@ -73,31 +71,17 @@ jobs:
           export ISSUE_URL="${{ github.event.issue.html_url }}"
           export ISSUE_BODY="$(cat issue-body.txt)"
           envsubst < email-template.md > email.md
-
-      - name: 💅 Add quote-styling CSS
-        run: |
-          cat <<'EOF' > email-style.css
-          blockquote {
-            margin: 0;
-            padding-left: 1em;
-            border-left: 3px solid #ccc;
-          }
-          blockquote blockquote {
-            border-left: 3px solid #aaa;
-            padding-left: 1em;
-          }
-          EOF     
                
       - name: 📲 Convert markdown to HTML
         run: |
           sudo apt-get update && sudo apt-get install -y pandoc
           pandoc email.md -f markdown -t html -s \
-            -H email-style.css \
             -o generated-email.html \
             --metadata title="Request Approved"
         
       - name: 📧 Send email notification
         uses: dawidd6/action-send-mail@v4
+        continue-on-error: true
         with:
           connection_url: ${{secrets.MAIL_CONNECTION}}
           subject: "✅ Request approved!"
@@ -111,3 +95,39 @@ jobs:
           # attachments: attachments.zip,git.diff,./dist/static/*.js
           # body: 
           html_body: file://generated-email.html
+
+
+      - name: 📝 Handle success or failure
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          EMAIL_TO: ${{ secrets.MAIL_TO }}
+          STATUS: ${{ steps.send_email.outcome }}
+        run: |
+          if [ "$STATUS" = "success" ]; then
+            DOMAIN=$(echo "$EMAIL_TO" | sed -E 's/.*@([^, >]+).*/\1/')
+            echo "✅ Email sent to $DOMAIN"
+
+            # Add comment
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"body\": \"✅ Email was sent successfully to \`$DOMAIN\`.\"}" \
+              "https://api.github.com/repos/$REPO/issues/$ISSUE_NUMBER/comments"
+
+            # Add label
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '[ "Request Sent" ]' \
+              "https://api.github.com/repos/$REPO/issues/$ISSUE_NUMBER/labels"
+
+          else
+            echo "❌ Email failed"
+
+            # Add failure comment with summary from logs
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"body\": \"❌ Email failed to send.\n\nPlease check the workflow logs for details.\"}" \
+              "https://api.github.com/repos/$REPO/issues/$ISSUE_NUMBER/comments"
+          fi
