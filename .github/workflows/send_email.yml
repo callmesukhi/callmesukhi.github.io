@@ -73,11 +73,28 @@ jobs:
           export ISSUE_URL="${{ github.event.issue.html_url }}"
           export ISSUE_BODY="$(cat issue-body.txt)"
           envsubst < email-template.md > email.md
-         
+
+      - name: 💅 Add quote-styling CSS
+        run: |
+          cat <<'EOF' > email-style.css
+          blockquote {
+            margin: 0;
+            padding-left: 1em;
+            border-left: 3px solid #ccc;
+          }
+          blockquote blockquote {
+            border-left: 3px solid #aaa;
+            padding-left: 1em;
+          }
+          EOF     
+               
       - name: 📲 Convert markdown to HTML
         run: |
           sudo apt-get update && sudo apt-get install -y pandoc
-          pandoc email.md -f markdown -t html -s -o generated-email.html --metadata title="Request Approved"
+          pandoc email.md -f markdown -t html -s \
+            -H email-style.css \
+            -o generated-email.html \
+            --metadata title="Request Approved"
         
       - name: 📧 Send email notification
         uses: dawidd6/action-send-mail@v4
