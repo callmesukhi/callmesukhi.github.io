@@ -18,6 +18,9 @@ jobs:
     outputs:
       skip_email: ${{ steps.check.outputs.skip_email }}
     steps:
+      - name: 💤 Wait for label propagation
+        run: sleep 5  # wait for 5 seconds
+        
       - name: 🏷️ Check for 'Request Sent' label
         id: check
         run: |
@@ -27,6 +30,7 @@ jobs:
           else
             echo "skip_email=false" >> $GITHUB_OUTPUT
           fi
+          
       - name: 💬 Notify if already sent
         if: steps.check.outputs.skip_email == 'true'
         run: |
