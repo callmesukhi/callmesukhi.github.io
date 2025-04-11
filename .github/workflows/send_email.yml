@@ -23,6 +23,7 @@ jobs:
             echo "skip_email=true" >> $GITHUB_OUTPUT
           else
             echo "skip_email=false" >> $GITHUB_OUTPUT
+          fi
       - name: 💬 Notify if already sent
         if: steps.check.outputs.skip_email == 'true'
         run: |
