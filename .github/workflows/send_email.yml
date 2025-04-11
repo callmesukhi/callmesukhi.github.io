@@ -21,35 +21,38 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         
-      - name: 🧹 Sanitize issue body (code → bold)
+      - name: 🧹 Sanitize issue body and save to file
         run: |
           body="${{ github.event.issue.body }}"
-      
-          # Convert inline `code` to bold
           body=$(echo "$body" | sed -E 's/`([^`]*)`/**\1**/g')
-      
-          # Convert fenced blocks (```...```) to bold text block
           body=$(echo "$body" | sed -E '/^```/,/^```/s/^/**/' | sed -E '/^```/d')
-      
           echo "$body" > issue-body.txt
           
-      - name: 🦾 Build final markdown with sanitized issue body
+      - name: ✍️ Create markdown email template
         run: |
-         cat <<'EOF' > email.md
-         🚀 An issue has been marked as **Approved**!
+          cat <<'EOF' > email-template.md
+          🚀 An issue has been marked as **Approved**!
+          
+          ### Title
+          {{ISSUE_TITLE}}
+          
+          ### Author
+          {{ISSUE_AUTHOR}}
+          
+          ### URL
+          {{ISSUE_URL}}
+          
+          ### Issue Body
+          {{ISSUE_BODY}}
+          EOF
 
-         ### Title
-         ${{ github.event.issue.title }}
-            
-         ### Author
-         ${{ github.event.issue.user.login }}
-                      
-         ### URL
-         ${{ github.event.issue.html_url }}
-                      
-         ### Issue Body
-         $(cat issue-body.txt)
-         EOF
+      - name: Substitute variables into email.md
+        run: |
+          export ISSUE_TITLE="${{ github.event.issue.title }}"
+          export ISSUE_AUTHOR="${{ github.event.issue.user.login }}"
+          export ISSUE_URL="${{ github.event.issue.html_url }}"
+          export ISSUE_BODY="$(cat issue-body.txt)"
+          envsubst < email-template.md > email.md
          
       - name: 📲 Convert markdown to HTML
         run: |
