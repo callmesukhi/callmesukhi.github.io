@@ -1,4 +1,4 @@
-name: Send Email on Approved Label
+name: Send Email on Approved Labeled Issues
 
 on:
   issues:
@@ -90,21 +90,15 @@ jobs:
           from: ${{ secrets.MAIL_FROM }}
           reply_to: ${{ secrets.MAIL_REPLY_TO }}
           cc: ${{ secrets.MAIL_CC }}
-          # bcc: ${{ secrets.MAIL_BCC }}
-          # convert_markdown: true
-          # envelope_from: mailer@example.com
-          # attachments: attachments.zip,git.diff,./dist/static/*.js
-          # body: 
           html_body: file://generated-email.html
 
 
       - name: 📝 Handle success or failure
         if: always()
         run: |
-          echo "Email step result: ${{ steps.send_email.outcome }}"
-          echo "Email step conclusion: ${{ steps.send_email.conclusion }}"
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
-          EMAIL_DOMAIN=$(echo "${{ secrets.MAIL_TO }}" | awk -F '@' '{print $2}')
+          RAW_EMAIL="${{ secrets.MAIL_TO }}"
+          EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
 
           if [ "${{ steps.sanitize.conclusion }}" != "success" ] || \
              [ "${{ steps.compose.conclusion }}" != "success" ] || \
