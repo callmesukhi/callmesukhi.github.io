@@ -28,7 +28,7 @@ jobs:
           subject: "Issue Approved: #${{ github.event.issue.number }}"
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_FROM }}
-          # reply_to: ${{ secrets.MAIL_REPLY_TO }}
+          reply_to: ${{ secrets.MAIL_REPLY_TO }}
           # in_reply_to: ${{ github.event.issue.html_url }}
           cc: ${{ secrets.MAIL_CC }}
           # bcc: ${{ secrets.MAIL_BCC }}
