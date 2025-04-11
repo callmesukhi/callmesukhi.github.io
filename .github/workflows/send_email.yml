@@ -11,6 +11,7 @@ permissions:
        
 jobs:
   check_label:
+    if: github.event.label.name == 'Approved'
     runs-on: ubuntu-latest
     permissions:
         issues: write
@@ -18,9 +19,6 @@ jobs:
     outputs:
       skip_email: ${{ steps.check.outputs.skip_email }}
     steps:
-      - name: 💤 Wait for label propagation
-        run: sleep 5  # wait for 5 seconds
-        
       - name: 🏷️ Check for 'Request Sent' label
         id: check
         run: |
