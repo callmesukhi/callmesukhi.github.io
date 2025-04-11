@@ -110,27 +110,19 @@ jobs:
               -d '{"body":"> [!CAUTION]\n > Failed to create the final email content."}' "$COMMENT_URL"
             exit 1
           }
-
-      - name: Cache Pandoc
-        uses: actions/cache@v3
-        with:
-          path: /var/cache/apt
-          key: ${{ runner.os }}-apt-pkgs-pandoc
-          restore-keys: |
-            ${{ runner.os }}-apt-pkgs-
           
       - name: 📲 Convert markdown to HTML
         run: |
           set -e
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
-          sudo apt-get update && sudo apt-get install -y pandoc || {
+          npm install -g markdown-it-cli markdown-it-task-lists || {
             curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > Failed to install Pandoc."}' "$COMMENT_URL"
+              -d '{"body":"> [!CAUTION]\n > Failed to install npm package."}' "$COMMENT_URL"
             exit 1
           }
 
-          pandoc email.md -f markdown -t html -s -o generated-email.html || {
+          npx markdown-it email.md -o generated-email.html || {
             curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Content-Type: application/json" \
               -d '{"body":"> [!CAUTION]\n > Failed to convert Markdown to HTML."}' "$COMMENT_URL"
@@ -166,9 +158,15 @@ jobs:
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           RAW_EMAIL="${{ secrets.MAIL_TO }}"
           EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
+      
+          COMMENT_BODY=$(cat <<EOF
+            ✅ **@${{ github.event.issue.user.login }}**, request sent successfully to **${EMAIL_DOMAIN}** 🚀
+          EOF
+          )
+
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{"body":"**@${{ github.event.issue.user.login }}**\n\n✅ Request sent successfully to `$EMAIL_DOMAIN` 🚀"}" "$COMMENT_URL"
+            -d "{\"body\": \"$COMMENT_BODY\"}" "$COMMENT_URL"
       
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
