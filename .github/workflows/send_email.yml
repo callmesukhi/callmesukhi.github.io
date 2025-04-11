@@ -113,6 +113,14 @@ jobs:
             exit 1
           }
 
+      - name: Cache Pandoc
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-pkgs-pandoc
+          restore-keys: |
+            ${{ runner.os }}-apt-pkgs-
+          
       - name: 📲 Convert markdown to HTML
         run: |
           set -e
