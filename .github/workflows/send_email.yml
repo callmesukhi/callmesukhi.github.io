@@ -147,7 +147,7 @@ jobs:
           EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d '{"body":"> [!CAUTION]\n > :red_circle: @${{ github.event.issue.user.login }}, sending request to `'"$EMAIL_DOMAIN"'` failed. Please check workflow logs."}' \
+            -d '{"body":"> [!CAUTION]\n > :red_circle: @${{ github.event.issue.user.login }}, sending request to `$EMAIL_DOMAIN` failed. Please check workflow logs."}' \
             "$COMMENT_URL"
 
       - name: ✅ Comment on success
@@ -158,7 +158,7 @@ jobs:
           EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{\"body\":"**@${{ github.event.issue.user.login }}**\n\n✅ Request sent successfully to \`$EMAIL_DOMAIN\` 🚀"}" "$COMMENT_URL"
+            -d "{"body":"**@${{ github.event.issue.user.login }}**\n\n✅ Request sent successfully to `$EMAIL_DOMAIN` 🚀"}" "$COMMENT_URL"
       
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
