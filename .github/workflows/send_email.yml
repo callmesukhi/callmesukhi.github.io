@@ -118,7 +118,7 @@ jobs:
           args: -f ma -t html -s -o generated-email.html email.md
 
       - name: ❌ If Converting to HTML fails
-        if: failure() && steps.convert.conclusion != 'success'
+        if: failure() && steps.convert.conclusion != 'success' && steps.convert.outcome != 'skipped'
         run: |
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
@@ -157,7 +157,7 @@ jobs:
           html_body: file://generated-email.html
 
       - name: 📩 Email failure fallback
-        if: failure() && steps.send_email.conclusion != 'success'
+        if: failure() && steps.send_email.conclusion != 'success' && steps.send_email.outcome != 'skipped'
         run: |
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           RAW_EMAIL="${{ secrets.MAIL_TO }}"
