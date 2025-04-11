@@ -31,6 +31,8 @@ jobs:
             echo "Issue already labeled as 'Request Sent'. Skipping workflow."
             exit 0
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🧹 Sanitize issue body and save to file
         run: |
