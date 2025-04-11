@@ -40,7 +40,7 @@ jobs:
       - name: Convert markdown to HTML
         run: |
           sudo apt-get update && sudo apt-get install -y pandoc
-          pandoc email.md -f markdown -t html -s -o generated-email.html --metadata title="Issue Approved"
+          pandoc email.md -f markdown -t html -s -o generated-email.html --metadata title="Request Approved" --css=https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css
         
       - name: Send email notification
         uses: dawidd6/action-send-mail@v4
