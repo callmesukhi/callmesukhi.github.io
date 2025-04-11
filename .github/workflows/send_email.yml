@@ -161,7 +161,12 @@ jobs:
         run: |
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           RAW_EMAIL="${{ secrets.MAIL_TO }}"
-          EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
+          # EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
+          EMAIL_DOMAINS=$(echo "$RAW_EMAIL" | tr ',' '\n' | \
+          sed -E 's/^.*@//' | \
+          sed -E 's/\.[^.]+$//' | \
+          awk '{ print toupper(substr($0,1,1)) substr($0,2) }' | \
+          sort -u | paste -sd ', ' -)
           COMMENT_BODY="> [!CAUTION]\n > :red_circle: **@${{ github.event.issue.user.login }}**, sending request to **\`${EMAIL_DOMAIN}\`** failed. Please check workflow logs."
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
