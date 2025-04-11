@@ -135,7 +135,7 @@ jobs:
         uses: dawidd6/action-send-mail@v4
         with:
           connection_url: ${{ secrets.MAIL_CONNECTION }}
-          subject: "✅ Request approved!"
+          subject: "[ACTION]: Purchase/Transfer"
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_FROM }}
           reply_to: ${{ secrets.MAIL_REPLY_TO }}
