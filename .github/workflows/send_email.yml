@@ -18,6 +18,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Debug file listing
+        run: ls -la
         
       - name: Send email notification
         uses: dawidd6/action-send-mail@v4
