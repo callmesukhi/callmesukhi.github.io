@@ -23,20 +23,20 @@ jobs:
       - name: Create markdown email content
         run: |
          cat <<EOF > email.md
-🚀 An issue has been marked as **Approved**!
+           🚀 An issue has been marked as **Approved**!
 
-### Title
-${{ github.event.issue.title }}
-          
-### Author
-${{ github.event.issue.user.login }}
-          
-### URL
-${{ github.event.issue.html_url }}
-          
-### Issue Body
-${{ github.event.issue.body }}
-EOF
+            ### Title
+            ${{ github.event.issue.title }}
+            
+            ### Author
+            ${{ github.event.issue.user.login }}
+                      
+            ### URL
+            ${{ github.event.issue.html_url }}
+                      
+            ### Issue Body
+            ${{ github.event.issue.body }}
+         EOF
       - name: Convert markdown to HTML
         run: |
           sudo apt-get update && sudo apt-get install -y pandoc
