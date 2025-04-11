@@ -8,10 +8,33 @@ on:
 permissions:
   issues: read
   contents: read
- 
+       
 jobs:
+  check_label:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_email: ${{ steps.check.outputs.skip_email }}
+    steps:
+      - name: 🏷️ Check for 'Request Sent' label
+        id: check
+        run: |
+          labels=$(jq -r '.issue.labels[].name' "$GITHUB_EVENT_PATH")
+          if echo "$labels" | grep -q '^Request Sent$'; then
+            echo "skip_email=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_email=false" >> $GITHUB_OUTPUT
+      - name: 💬 Notify if already sent
+        if: steps.check.outputs.skip_email == 'true'
+        run: |
+          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
+          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"body":"> [!CAUTION]\n > This [issue](${{ github.event.issue.number }}) already has a https://github.com/callmesukhi/callmesukhi.github.io/labels/Request%20Sent label. If this was assigned by mistake or you want to resend the request, please remove the https://github.com/callmesukhi/callmesukhi.github.io/labels/Request%20Sent and https://github.com/callmesukhi/callmesukhi.github.io/labels/Approved labels and **reapply** the https://github.com/callmesukhi/callmesukhi.github.io/labels/Approved label."}' \
+            "$COMMENT_URL"
+            
   send_email:
-    if: github.event.label.name == 'Approved'
+    needs: check_label
+    if: needs.check_label.outputs.skip_email == 'false' && github.event.label.name == 'Approved'
     runs-on: ubuntu-latest
     permissions:
         issues: write
@@ -20,19 +43,6 @@ jobs:
     steps:
       - name: ✔️ Checkout repo
         uses: actions/checkout@v4
-
-      - name: 🛑 Skip if 'Request Sent' label already exists
-        run: |
-          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
-          if gh issue view ${{ github.event.issue.number }} --json labels -q ".labels[].name" | grep -q "Request Sent"; then
-            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > This [issue](${{ github.event.issue.number }}) already has a https://github.com/callmesukhi/callmesukhi.github.io/labels/Request%20Sent label. If this was assigned by mistake or you want to resend the request, please remove the https://github.com/callmesukhi/callmesukhi.github.io/labels/Request%20Sent and https://github.com/callmesukhi/callmesukhi.github.io/labels/Approved labels and **reapply** the https://github.com/callmesukhi/callmesukhi.github.io/labels/Approved label."}' "$COMMENT_URL"
-            echo "Issue already labeled as 'Request Sent'. Skipping workflow."
-            exit 0
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🧹 Sanitize issue body and save to file
         run: |
