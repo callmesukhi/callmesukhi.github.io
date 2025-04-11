@@ -26,11 +26,11 @@ jobs:
           # Extract raw issue body from event payload
           ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH")
       
-          # Replace `inline code` with **bold**
-          ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/`([^`]*)`/**\1**/g')
+          # Replace ONLY inline code (`...`) — not ``` blocks
+          ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/(^|[^`])`([^`]+)`([^`]|$)/\1**\2**\3/g')
       
-          # Convert fenced code blocks (```...```) to bold text block
-          ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E '/^```/,/^```/s/^/**/' | sed -E '/^```/d')
+          # Optional: convert code blocks into indented lines or blockquotes
+          ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/^```.*$//' | sed -E 's/^(.*)$/    \1/')
       
           # Save to file
           echo "$ISSUE_BODY" > issue-body.txt
