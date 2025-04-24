@@ -8,7 +8,7 @@ on:
 permissions:
   issues: read
   contents: read
-  actions: write
+  actions: read
 
 jobs:
   check_label:
@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
         issues: write
-        contents: read
     outputs:
       skip_email: ${{ steps.check.outputs.skip_email }}
     env:
@@ -25,7 +24,7 @@ jobs:
     steps:
       - name: ✔️ Checkout repo
         uses: actions/checkout@v4
-        
+
       - name: 🏷️ Check for 'Request Sent' label
         id: check
         run: |
@@ -35,51 +34,67 @@ jobs:
           else
             echo "skip_email=false" >> $GITHUB_OUTPUT
           fi
-          
+
       - name: 💬 Notify if already sent
         if: steps.check.outputs.skip_email == 'true'
         run: |
           gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
           > This issue already has a https://github.com/github/domains/labels/Request%20Sent label. If this was assigned by mistake or you want to resend the request, please remove the https://github.com/github/domains/labels/Request%20Sent and https://github.com/github/domains/labels/Approved labels and **reapply** the https://github.com/github/domains/labels/Approved label.
           
-          cc @callmesukhi"
-            
-  send_email:
+          cc **@github/github-domains-admins** **@${{ github.event.issue.user.login }}**""
+
+  request_approval:
     needs: check_label
     if: needs.check_label.outputs.skip_email == 'false' && github.event.label.name == 'Approved'
     runs-on: ubuntu-latest
     permissions:
-        issues: write
-        contents: read
-        actions: write
-    environment:
-      name: approval-required
+      issues: write
     env:
       GH_TOKEN: ${{ github.token }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - name: ✔️ Checkout repo
         uses: actions/checkout@v4
-        
+
       - name: 💬 Notify approval required and add label
         run: |
           APPROVAL_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           gh issue comment $ISSUE_NUMBER --body "> [!IMPORTANT]
-          > Approval required from the **@github/github-domains-admins** team. [Review and Approve Workflow Run](${APPROVAL_URL})"
-          gh issue edit $ISSUE_NUMBER --add-label "domains-admins-approval-required"
+          > Approval required from the **@github/github-domains-admins** team. [Review and Approve Workflow Run](${APPROVAL_URL}) to send the email."
+          gh issue edit $ISSUE_NUMBER --add-label "REQUIRES-APPROVAL-TO-SEND-EMAIL"
+
+  send_approved_email:
+    needs: request_approval
+    if: success() && github.event.label.name == 'Approved' && needs.request_approval.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+        issues: write 
+        actions: write
+    environment:
+      name: send-email
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - name: ✔️ Checkout repo
+        uses: actions/checkout@v4
 
       - name: 🧹 Sanitize issue body and save to file
         run: |
           set -e
           ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH") || {
           gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
-          > 🔴 Failed to read issue body from GitHub event."
+          > 🔴 Failed to read issue body from GitHub event.
+
+          cc @callmesukhi"
             exit 1
           }
 
           ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/(^|[^`])`([^`]+)`([^`]|$)/\1**\2**\3/g') || {
           gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
-          > 🔴 Failed to sanitize inline code blocks."
+          > 🔴 Failed to sanitize inline code blocks.
+
+          cc @callmesukhi"
             exit 1
           }
 
@@ -101,7 +116,9 @@ jobs:
             done <<< "$ISSUE_BODY"
           } > issue-body.txt || {
           gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
-          > 🔴 Failed to write sanitized issue body."
+          > 🔴 Failed to write sanitized issue body.
+
+          cc @callmesukhi"
             exit 1
           }
 
@@ -119,7 +136,9 @@ jobs:
 
           envsubst < email-template.md > email.md || {
           gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
-          > 🔴 Failed to create the final email content."
+          > 🔴 Failed to create the final email content.
+
+          cc @callmesukhi"
             exit 1
           }
 
@@ -133,8 +152,10 @@ jobs:
         if: failure() && steps.convert.conclusion != 'success' && steps.convert.outcome != 'skipped'
         run: |
           gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
-          > 🔴 Failed to convert Markdown to HTML."
-  
+          > 🔴 Failed to convert Markdown to HTML.
+
+          cc @callmesukhi"
+
       - name: 📧 Send email notification
         id: send_email
         uses: dawidd6/action-send-mail@88cb2160ee7129bc98b7168ff2059e6bede9f33f
@@ -157,10 +178,12 @@ jobs:
           awk '{ print toupper(substr($0,1,1)) substr($0,2) }' | \
           sort -u | paste -sd ', ' -)
           gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
-          > :red_circle: **@${{ github.event.issue.user.login }}**, sending request to **${EMAIL_DOMAINS}** failed. Please check workflow logs."
+          > :red_circle: **@${{ github.event.issue.user.login }}**, sending request to **${EMAIL_DOMAINS}** failed. Please check workflow logs.
+
+          cc @callmesukhi"
 
       - name: ✅ Comment on success
-        if: success()
+        if: success() && steps.send_email.conclusion == 'success' && steps.send_email.outcome != 'skipped'
         run: |
           RAW_EMAIL="${{ secrets.MAIL_TO }}"
           EMAIL_DOMAINS=$(echo "$RAW_EMAIL" | tr ',' '\n' | \
@@ -170,6 +193,4 @@ jobs:
           sort -u | paste -sd ', ' -)
           gh issue comment $ISSUE_NUMBER --body "> [!NOTE]
           > ✅ **@${{ github.event.issue.user.login }}**, request sent successfully to **${EMAIL_DOMAINS}** 🚀"
-          
-          gh issue edit $ISSUE_NUMBER --add-label "Request Sent" --remove-label "domains-admins-approval-required"
-
+          gh issue edit $ISSUE_NUMBER --add-label "Request Sent" --remove-label "REQUIRES-APPROVAL-TO-SEND-EMAIL"
