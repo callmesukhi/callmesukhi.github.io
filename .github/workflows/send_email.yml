@@ -8,7 +8,8 @@ on:
 permissions:
   issues: read
   contents: read
-       
+  actions: write #TODO: Remove this permission if not needed
+
 jobs:
   check_label:
     if: github.event.label.name == 'Approved'
@@ -35,7 +36,7 @@ jobs:
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d '{"body":"> [!CAUTION]\n > This issue already has a https://github.com/callmesukhi/callmesukhi.github.io/labels/Request%20Sent label. If this was assigned by mistake or you want to resend the request, please remove the https://github.com/callmesukhi/callmesukhi.github.io/labels/Request%20Sent and https://github.com/callmesukhi/callmesukhi.github.io/labels/Approved labels and **reapply** the https://github.com/callmesukhi/callmesukhi.github.io/labels/Approved label."}' \
+            -d '{"body":"> [!CAUTION]\n > This issue already has a https://github.com/github/domains/labels/Request%20Sent label. If this was assigned by mistake or you want to resend the request, please remove the https://github.com/github/domains/labels/Request%20Sent and https://github.com/github/domains/labels/Approved labels and **reapply** the https://github.com/github/domains/labels/Approved label."}' \
             "$COMMENT_URL"
             
   send_email:
@@ -45,7 +46,9 @@ jobs:
     permissions:
         issues: write
         contents: read
-
+        actions: write #TODO: Remove this permission if not needed
+    environment:
+      name: approval-required
     steps:
       - name: ✔️ Checkout repo
         uses: actions/checkout@v4
@@ -99,9 +102,9 @@ jobs:
           $ISSUE_BODY
           EOF
 
-          # export ISSUE_TITLE="${{ github.event.issue.title }}"
-          # export ISSUE_AUTHOR="${{ github.event.issue.user.login }}"
-          # export ISSUE_URL="${{ github.event.issue.html_url }}"
+          export ISSUE_TITLE="${{ github.event.issue.title }}"
+          export ISSUE_AUTHOR="${{ github.event.issue.user.login }}"
+          export ISSUE_URL="${{ github.event.issue.html_url }}"
           export ISSUE_BODY="$(cat issue-body.txt)"
 
           envsubst < email-template.md > email.md || {
@@ -125,28 +128,9 @@ jobs:
                -H "Content-Type: application/json" \
                -d '{"body":"> [!CAUTION]\n > 🔴 Failed to convert Markdown to HTML."}' "$COMMENT_URL"
   
-          
-      # - name: 📲 Convert markdown to HTML
-      #   run: |
-      #     set -e
-      #     COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
-      #     npm install -g markdown-it-cli markdown-it-task-lists || {
-      #       curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-      #         -H "Content-Type: application/json" \
-      #         -d '{"body":"> [!CAUTION]\n > Failed to install npm package."}' "$COMMENT_URL"
-      #       exit 1
-      #     }
-
-      #     npx markdown-it email.md -o generated-email.html || {
-      #       curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-      #         -H "Content-Type: application/json" \
-      #         -d '{"body":"> [!CAUTION]\n > Failed to convert Markdown to HTML."}' "$COMMENT_URL"
-      #       exit 1
-      #     }
-      
       - name: 📧 Send email notification
         id: send_email
-        uses: dawidd6/action-send-mail@v4
+        uses: dawidd6/action-send-mail@88cb2160ee7129bc98b7168ff2059e6bede9f33f
         with:
           connection_url: ${{ secrets.MAIL_CONNECTION_URL }}
           subject: "[ACTION]: Purchase/Transfer"
@@ -161,7 +145,6 @@ jobs:
         run: |
           COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           RAW_EMAIL="${{ secrets.MAIL_TO }}"
-          # EMAIL_DOMAIN=$(echo "$RAW_EMAIL" | sed -E 's/^.*@//' | sed -E 's/\.[^.]+$//' | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
           EMAIL_DOMAINS=$(echo "$RAW_EMAIL" | tr ',' '\n' | \
           sed -E 's/^.*@//' | \
           sed -E 's/\.[^.]+$//' | \
