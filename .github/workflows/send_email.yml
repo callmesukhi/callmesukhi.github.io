@@ -62,7 +62,7 @@ jobs:
       - name: 💬 Notify approval required and add label
         run: |
           APPROVAL_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          gh issue comment $ISSUE_NUMBER --body "> [!IMPORTANT]\n 
+          gh issue comment $ISSUE_NUMBER --body "> [!IMPORTANT]
           > Approval required from the **@github/github-domains-admins** team. [Review and Approve Workflow Run](${APPROVAL_URL})"
           gh issue edit $ISSUE_NUMBER --add-label "domains-admins-approval-required"
 
@@ -70,13 +70,13 @@ jobs:
         run: |
           set -e
           ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH") || {
-          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n 
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
           > 🔴 Failed to read issue body from GitHub event."
             exit 1
           }
 
           ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/(^|[^`])`([^`]+)`([^`]|$)/\1**\2**\3/g') || {
-          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n 
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
           > 🔴 Failed to sanitize inline code blocks."
             exit 1
           }
@@ -98,7 +98,7 @@ jobs:
               fi
             done <<< "$ISSUE_BODY"
           } > issue-body.txt || {
-          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n 
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
           > 🔴 Failed to write sanitized issue body."
             exit 1
           }
@@ -116,7 +116,7 @@ jobs:
           export ISSUE_BODY="$(cat issue-body.txt)"
 
           envsubst < email-template.md > email.md || {
-          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n 
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
           > 🔴 Failed to create the final email content."
             exit 1
           }
@@ -130,7 +130,7 @@ jobs:
       - name: ❌ If Converting to HTML fails
         if: failure() && steps.convert.conclusion != 'success' && steps.convert.outcome != 'skipped'
         run: |
-          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n 
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
           > 🔴 Failed to convert Markdown to HTML."
   
       - name: 📧 Send email notification
@@ -154,7 +154,7 @@ jobs:
           sed -E 's/\.[^.]+$//' | \
           awk '{ print toupper(substr($0,1,1)) substr($0,2) }' | \
           sort -u | paste -sd ', ' -)
-          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n 
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
           > :red_circle: **@${{ github.event.issue.user.login }}**, sending request to **${EMAIL_DOMAINS}** failed. Please check workflow logs."
 
       - name: ✅ Comment on success
@@ -166,7 +166,8 @@ jobs:
           sed -E 's/\.[^.]+$//' | \
           awk '{ print toupper(substr($0,1,1)) substr($0,2) }' | \
           sort -u | paste -sd ', ' -)
-          gh issue comment $ISSUE_NUMBER --body "✅ **@${{ github.event.issue.user.login }}**, request sent successfully to **${EMAIL_DOMAINS}** 🚀"
+          gh issue comment $ISSUE_NUMBER --body "> [!NOTE]
+          > ✅ **@${{ github.event.issue.user.login }}**, request sent successfully to **${EMAIL_DOMAINS}** 🚀"
           
           gh issue edit $ISSUE_NUMBER --add-label "Request Sent" --remove-label "domains-admins-approval-required"
 
