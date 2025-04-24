@@ -165,10 +165,7 @@ jobs:
           sed -E 's/\.[^.]+$//' | \
           awk '{ print toupper(substr($0,1,1)) substr($0,2) }' | \
           sort -u | paste -sd ', ' -)
-          COMMENT_BODY=$(cat <<EOF
-            ✅ **@${{ github.event.issue.user.login }}**, request sent successfully to **${EMAIL_DOMAIN}** 🚀
-          EOF
-          )
+          COMMENT_BODY="✅ **@${{ github.event.issue.user.login }}**, request sent successfully to **${EMAIL_DOMAIN}** 🚀"
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "{\"body\": \"$COMMENT_BODY\"}" "$COMMENT_URL"
