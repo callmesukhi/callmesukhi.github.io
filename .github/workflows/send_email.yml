@@ -49,7 +49,19 @@ jobs:
         actions: write #TODO: Remove this permission if not needed
     environment:
       name: approval-required
+    env:
+      GH_TOKEN: ${{ github.token }} # Pass token to gh cli
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
+      - name: 💬 Notify approval required and add label
+        run: |
+          APPROVAL_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          COMMENT_BODY="> [!IMPORTANT]
+          > Approval required from the **github/github-domains-admins** team.
+          > Please review and approve the workflow run here: ${APPROVAL_URL}"
+          gh issue comment $ISSUE_NUMBER --body "$COMMENT_BODY"
+          gh issue edit $ISSUE_NUMBER --add-label "domains-admins-approval-required"
+          
       - name: ✔️ Checkout repo
         uses: actions/checkout@v4
 
@@ -169,8 +181,6 @@ jobs:
           curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "{\"body\": \"$COMMENT_BODY\"}" "$COMMENT_URL"
-      
-          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{"labels": ["Request Sent"]}' \
-            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels"
+          
+          gh issue edit $ISSUE_NUMBER --add-label "Request Sent" --remove-label "domains-admins-approval-required"
+
