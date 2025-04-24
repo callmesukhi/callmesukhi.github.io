@@ -23,6 +23,9 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
+      - name: ✔️ Checkout repo
+        uses: actions/checkout@v4
+        
       - name: 🏷️ Check for 'Request Sent' label
         id: check
         run: |
