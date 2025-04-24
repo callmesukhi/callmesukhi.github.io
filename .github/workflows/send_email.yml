@@ -40,7 +40,9 @@ jobs:
         if: steps.check.outputs.skip_email == 'true'
         run: |
           gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]
-          > This issue already has a https://github.com/github/domains/labels/Request%20Sent label. If this was assigned by mistake or you want to resend the request, please remove the https://github.com/github/domains/labels/Request%20Sent and https://github.com/github/domains/labels/Approved labels and **reapply** the https://github.com/github/domains/labels/Approved label."
+          > This issue already has a https://github.com/github/domains/labels/Request%20Sent label. If this was assigned by mistake or you want to resend the request, please remove the https://github.com/github/domains/labels/Request%20Sent and https://github.com/github/domains/labels/Approved labels and **reapply** the https://github.com/github/domains/labels/Approved label.
+          
+          cc @callmesukhi"
             
   send_email:
     needs: check_label
