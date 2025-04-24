@@ -8,7 +8,7 @@ on:
 permissions:
   issues: read
   contents: read
-  actions: write #TODO: Remove this permission if not needed
+  actions: write
 
 jobs:
   check_label:
@@ -19,6 +19,9 @@ jobs:
         contents: read
     outputs:
       skip_email: ${{ steps.check.outputs.skip_email }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - name: 🏷️ Check for 'Request Sent' label
         id: check
@@ -33,11 +36,7 @@ jobs:
       - name: 💬 Notify if already sent
         if: steps.check.outputs.skip_email == 'true'
         run: |
-          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
-          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{"body":"> [!CAUTION]\n > This issue already has a https://github.com/github/domains/labels/Request%20Sent label. If this was assigned by mistake or you want to resend the request, please remove the https://github.com/github/domains/labels/Request%20Sent and https://github.com/github/domains/labels/Approved labels and **reapply** the https://github.com/github/domains/labels/Approved label."}' \
-            "$COMMENT_URL"
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n > This issue already has a https://github.com/github/domains/labels/Request%20Sent label. If this was assigned by mistake or you want to resend the request, please remove the https://github.com/github/domains/labels/Request%20Sent and https://github.com/github/domains/labels/Approved labels and **reapply** the https://github.com/github/domains/labels/Approved label."
             
   send_email:
     needs: check_label
@@ -46,11 +45,11 @@ jobs:
     permissions:
         issues: write
         contents: read
-        actions: write #TODO: Remove this permission if not needed
+        actions: write
     environment:
       name: approval-required
     env:
-      GH_TOKEN: ${{ github.token }} # Pass token to gh cli
+      GH_TOKEN: ${{ github.token }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - name: ✔️ Checkout repo
@@ -59,26 +58,19 @@ jobs:
       - name: 💬 Notify approval required and add label
         run: |
           APPROVAL_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          COMMENT_BODY="> [!IMPORTANT]
-          > Approval required from the **github/github-domains-admins** team. [Review and Approve Workflow Run](${APPROVAL_URL})"
-          gh issue comment $ISSUE_NUMBER --body "$COMMENT_BODY"
+          gh issue comment $ISSUE_NUMBER --body "> [!IMPORTANT]\n > Approval required from the **@github/github-domains-admins** team. [Review and Approve Workflow Run](${APPROVAL_URL})"
           gh issue edit $ISSUE_NUMBER --add-label "domains-admins-approval-required"
 
       - name: 🧹 Sanitize issue body and save to file
         run: |
           set -e
-          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           ISSUE_BODY=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH") || {
-            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > 🔴 Failed to read issue body from GitHub event."}' "$COMMENT_URL"
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n > 🔴 Failed to read issue body from GitHub event."
             exit 1
           }
 
           ISSUE_BODY=$(echo "$ISSUE_BODY" | sed -E 's/(^|[^`])`([^`]+)`([^`]|$)/\1**\2**\3/g') || {
-            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > 🔴 Failed to sanitize inline code blocks."}' "$COMMENT_URL"
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n > 🔴 Failed to sanitize inline code blocks."
             exit 1
           }
 
@@ -99,16 +91,13 @@ jobs:
               fi
             done <<< "$ISSUE_BODY"
           } > issue-body.txt || {
-            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > 🔴 Failed to write sanitized issue body."}' "$COMMENT_URL"
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n > 🔴 Failed to write sanitized issue body."
             exit 1
           }
 
       - name: ✍️ Create markdown email template
         run: |
           set -e
-          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           cat <<'EOF' > email-template.md
           $ISSUE_BODY
           EOF
@@ -119,9 +108,7 @@ jobs:
           export ISSUE_BODY="$(cat issue-body.txt)"
 
           envsubst < email-template.md > email.md || {
-            curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: application/json" \
-              -d '{"body":"> [!CAUTION]\n > 🔴 Failed to create the final email content."}' "$COMMENT_URL"
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n > 🔴 Failed to create the final email content."
             exit 1
           }
 
@@ -134,10 +121,7 @@ jobs:
       - name: ❌ If Converting to HTML fails
         if: failure() && steps.convert.conclusion != 'success' && steps.convert.outcome != 'skipped'
         run: |
-          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
-          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Content-Type: application/json" \
-               -d '{"body":"> [!CAUTION]\n > 🔴 Failed to convert Markdown to HTML."}' "$COMMENT_URL"
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n > 🔴 Failed to convert Markdown to HTML."
   
       - name: 📧 Send email notification
         id: send_email
@@ -154,32 +138,24 @@ jobs:
       - name: 📩 Email failure fallback
         if: failure() && steps.send_email.conclusion != 'success' && steps.send_email.outcome != 'skipped'
         run: |
-          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           RAW_EMAIL="${{ secrets.MAIL_TO }}"
           EMAIL_DOMAINS=$(echo "$RAW_EMAIL" | tr ',' '\n' | \
           sed -E 's/^.*@//' | \
           sed -E 's/\.[^.]+$//' | \
           awk '{ print toupper(substr($0,1,1)) substr($0,2) }' | \
           sort -u | paste -sd ', ' -)
-          COMMENT_BODY="> [!CAUTION]\n > :red_circle: **@${{ github.event.issue.user.login }}**, sending request to **${EMAIL_DOMAINS}** failed. Please check workflow logs."
-          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"body\": \"$COMMENT_BODY\"}" "$COMMENT_URL"
+          gh issue comment $ISSUE_NUMBER --body "> [!CAUTION]\n > :red_circle: **@${{ github.event.issue.user.login }}**, sending request to **${EMAIL_DOMAINS}** failed. Please check workflow logs."
 
       - name: ✅ Comment on success
         if: success()
         run: |
-          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments"
           RAW_EMAIL="${{ secrets.MAIL_TO }}"
           EMAIL_DOMAINS=$(echo "$RAW_EMAIL" | tr ',' '\n' | \
           sed -E 's/^.*@//' | \
           sed -E 's/\.[^.]+$//' | \
           awk '{ print toupper(substr($0,1,1)) substr($0,2) }' | \
           sort -u | paste -sd ', ' -)
-          COMMENT_BODY="✅ **@${{ github.event.issue.user.login }}**, request sent successfully to **${EMAIL_DOMAINS}** 🚀"
-          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"body\": \"$COMMENT_BODY\"}" "$COMMENT_URL"
+          gh issue comment $ISSUE_NUMBER --body "✅ **@${{ github.event.issue.user.login }}**, request sent successfully to **${EMAIL_DOMAINS}** 🚀"
           
           gh issue edit $ISSUE_NUMBER --add-label "Request Sent" --remove-label "domains-admins-approval-required"
 
