@@ -60,7 +60,7 @@ jobs:
         run: |
           APPROVAL_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           COMMENT_BODY="> [!IMPORTANT]
-          > Approval required from the **github/github-domains-admins** team. [Review and Approve Workflow Run](${APPROVAL_URL})
+          > Approval required from the **github/github-domains-admins** team. [Review and Approve Workflow Run](${APPROVAL_URL})"
           gh issue comment $ISSUE_NUMBER --body "$COMMENT_BODY"
           gh issue edit $ISSUE_NUMBER --add-label "domains-admins-approval-required"
 
