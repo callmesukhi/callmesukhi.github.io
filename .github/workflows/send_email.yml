@@ -53,6 +53,9 @@ jobs:
       GH_TOKEN: ${{ github.token }} # Pass token to gh cli
       ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
+      - name: ✔️ Checkout repo
+        uses: actions/checkout@v4
+        
       - name: 💬 Notify approval required and add label
         run: |
           APPROVAL_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
@@ -61,9 +64,6 @@ jobs:
           > Please review and approve the workflow run here: ${APPROVAL_URL}"
           gh issue comment $ISSUE_NUMBER --body "$COMMENT_BODY"
           gh issue edit $ISSUE_NUMBER --add-label "domains-admins-approval-required"
-          
-      - name: ✔️ Checkout repo
-        uses: actions/checkout@v4
 
       - name: 🧹 Sanitize issue body and save to file
         run: |
